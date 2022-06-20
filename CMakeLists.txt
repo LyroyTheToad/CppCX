@@ -26,4 +26,4 @@ if(CPPCX_BUILD_TESTS)
 endif()
 
 add_executable(main main.cpp)
-target_link_libraries(main cppcx)
+target_link_libraries(main PRIVATE cppcx)

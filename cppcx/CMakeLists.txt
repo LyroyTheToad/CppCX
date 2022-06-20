@@ -1,12 +1,13 @@
 cmake_minimum_required(VERSION 3.23.2)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #
 # Add files
 #
 
-add_library(
-    ${THIS} SHARED
+add_library(${THIS} SHARED
     cppcx.cpp
 )
 

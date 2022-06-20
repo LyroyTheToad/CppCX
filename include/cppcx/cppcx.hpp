@@ -1,5 +1,6 @@
-#include <string>
 #include <future>
+#include <string>
+#include <vector>
 
 namespace cx
 {
@@ -20,13 +21,13 @@ namespace cx
         // Constructors, assignment operators and deconstructor
         //
 
-        Future() = default;
+        Future() noexcept;
 
         Future(const Future&) = delete;
         Future& operator=(const Future&) = delete;
 
-        Future(Future&& other) noexcept = default;
-        Future& operator=(Future&& other) noexcept = default;
+        Future(Future&&) noexcept = default;
+        Future& operator=(Future&&) noexcept = default;
 
         ~Future();
 
@@ -35,35 +36,38 @@ namespace cx
         // Public functions
         //
 
-        inline void GiveUp() { if (mKeepRunning) *mKeepRunning = false; }
+        inline void GiveUp() { if (mpKeepRunning) *mpKeepRunning = false; }
 
 
         //
-        // Wrappers for "std::future" methods
+        // Wrappers for `std::future` methods
         //
 
-        inline Result Get() { return mFuture.get(); }
+        inline Result Get() { _CheckIfValid(); return mFuture.get(); }
         inline bool Valid() const { return mFuture.valid(); }
-        inline void Wait() const { return mFuture.wait(); }
+        inline void Wait() const { _CheckIfValid(); return mFuture.wait(); }
         template<class Rep, class Period>
-        inline std::future_status WaitFor(const std::chrono::duration<Rep,Period>& t) const
-        { return mFuture.wait_for(t); }
+        inline std::future_status WaitFor(const std::chrono::duration<Rep, Period>& t) const
+        { _CheckIfValid(); return mFuture.wait_for(t); }
         template<class Clock, class Duration>
-        inline std::future_status WaitUntil(const std::chrono::time_point<Clock,Duration>& t) const
-        { return mFuture.wait_until(t); }
+        inline std::future_status WaitUntil(const std::chrono::time_point<Clock, Duration>& t) const
+        { _CheckIfValid(); return mFuture.wait_until(t); }
 
 
     private:
 
         std::future<Result> mFuture;
-        std::unique_ptr<bool> mKeepRunning = std::make_unique<bool>(true);
+        std::shared_ptr<bool> mpKeepRunning = std::make_shared<bool>(true);
 
-        // Friend to grant direct access to `mFuture` and `mKeepRunning`
+        inline void _CheckIfValid() const { if (!Valid()) throw std::runtime_error("Accessing invalid cx::Future"); }
+
+        // Friend to grant direct access to `mFuture` and `mpKeepRunning`
         friend Future AsyncExecute(const std::string& command);
     };
 
+    Result Execute(const std::string& command, const uint16_t timeout = 10);
 
-    Result Execute(const std::string& command, uint16_t timeout = 30);
+    // Result Execute(const std::string& command, const std::vector<std::string>& stdIn, const uint16_t timeout = 10);
 
     Future AsyncExecute(const std::string& command);
-}
+};
