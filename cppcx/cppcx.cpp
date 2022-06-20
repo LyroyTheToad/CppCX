@@ -25,7 +25,7 @@ cx::Future::~Future()
 // Functions
 //
 
-cx::Result cx::Execute(const std::string& command, const uint16_t timeout /*= 10*/)
+cx::Result cx::Execute(const std::string& command, const std::vector<std::string>& stdIn /*= {}*/, const uint16_t timeout /*= 10*/)
 {
     cx::Result cxResult;
 
@@ -42,6 +42,7 @@ cx::Result cx::Execute(const std::string& command, const uint16_t timeout /*= 10
     bp::child childProcess;
 
     bp::ipstream outStream, errStream;
+    bp::opstream inStream;
     std::string line;
 
     std::error_code ec;
@@ -50,6 +51,7 @@ cx::Result cx::Execute(const std::string& command, const uint16_t timeout /*= 10
     childProcess = bp::child(
         command,
         processGroup,
+        bp::std_in < inStream,
         bp::std_out > outStream,
         bp::std_err > errStream,
         ec
@@ -61,6 +63,12 @@ cx::Result cx::Execute(const std::string& command, const uint16_t timeout /*= 10
         cxResult.stdErr = "Invalid command";
         cxResult.success = false;
         return cxResult;
+    }
+
+
+    for (const std::string& s : stdIn)
+    {
+        inStream << s << std::endl;
     }
 
 
@@ -86,17 +94,15 @@ cx::Result cx::Execute(const std::string& command, const uint16_t timeout /*= 10
     {
         cxResult.stdErr += line + "\n";
     }
-    if (!cxResult.stdErr.empty())
-    {
-        cxResult.stdErr.pop_back();
-        cxResult.success = false;
-    }
+    if (!cxResult.stdErr.empty()) cxResult.stdErr.pop_back();
+
+    if (!cxResult.stdErr.empty() && cxResult.stdOut.empty()) cxResult.success = false;
 
     return cxResult;
 }
 
 
-cx::Future cx::AsyncExecute(const std::string &command)
+cx::Future cx::AsyncExecute(const std::string &command, const std::vector<std::string>& stdIn /*= {}*/)
 {
     cx::Future cxFuture;
 
@@ -115,7 +121,7 @@ cx::Future cx::AsyncExecute(const std::string &command)
 
     const std::shared_ptr<const bool> pKeepRunning = cxFuture.mpKeepRunning;
 
-    cxFuture.mFuture = std::async(std::launch::async, [command, pKeepRunning]()
+    cxFuture.mFuture = std::async(std::launch::async, [command, pKeepRunning, stdIn]()
     {
         namespace bp = boost::process;
         using namespace std::chrono_literals;
@@ -124,6 +130,7 @@ cx::Future cx::AsyncExecute(const std::string &command)
         bp::child childProcess;
 
         bp::ipstream outStream, errStream;
+        bp::opstream inStream;
         std::string line;
 
         cx::Result cxResult;
@@ -134,6 +141,7 @@ cx::Future cx::AsyncExecute(const std::string &command)
         childProcess = bp::child(
             command,
             processGroup,
+            bp::std_in < inStream,
             bp::std_out > outStream,
             bp::std_err > errStream,
             ec
@@ -145,6 +153,12 @@ cx::Future cx::AsyncExecute(const std::string &command)
             cxResult.stdErr = "Invalid command";
             cxResult.success = false;
             return cxResult;
+        }
+
+
+        for (const std::string& s : stdIn)
+        {
+            inStream << s << std::endl;
         }
 
 
@@ -173,11 +187,9 @@ cx::Future cx::AsyncExecute(const std::string &command)
         {
             cxResult.stdErr += line + "\n";
         }
-        if (!cxResult.stdErr.empty())
-        {
-            cxResult.stdErr.pop_back();
-            cxResult.success = false;
-        }
+        if (!cxResult.stdErr.empty()) cxResult.stdErr.pop_back();
+
+        if (!cxResult.stdErr.empty() && cxResult.stdOut.empty()) cxResult.success = false;
 
         return cxResult;
 

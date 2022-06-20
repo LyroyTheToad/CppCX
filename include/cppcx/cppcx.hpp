@@ -62,12 +62,10 @@ namespace cx
         inline void _CheckIfValid() const { if (!Valid()) throw std::runtime_error("Accessing invalid cx::Future"); }
 
         // Friend to grant direct access to `mFuture` and `mpKeepRunning`
-        friend Future AsyncExecute(const std::string& command);
+        friend Future AsyncExecute(const std::string& command, const std::vector<std::string>& stdIn);
     };
 
-    Result Execute(const std::string& command, const uint16_t timeout = 10);
+    Result Execute(const std::string& command, const std::vector<std::string>& stdIn = {}, const uint16_t timeout = 10);
 
-    // Result Execute(const std::string& command, const std::vector<std::string>& stdIn, const uint16_t timeout = 10);
-
-    Future AsyncExecute(const std::string& command);
+    Future AsyncExecute(const std::string& command, const std::vector<std::string>& stdIn = {});
 };
