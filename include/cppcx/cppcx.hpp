@@ -37,6 +37,9 @@ namespace cx
         //
 
         inline void GiveUp() { if (mpKeepRunning) *mpKeepRunning = false; }
+        template<class Rep, class Period>
+        inline void GiveUpIn(const std::chrono::duration<Rep, Period>& t)
+        { WaitFor(t); GiveUp(); }
 
 
         //
