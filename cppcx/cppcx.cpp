@@ -93,13 +93,11 @@ cx::Result cx::Execute(const std::string& command, const std::vector<std::string
     {
         cxResult.stdOut += line + "\n";
     }
-    if (!cxResult.stdOut.empty()) cxResult.stdOut.pop_back();
     
     while (errStream && std::getline(errStream, line))
     {
         cxResult.stdErr += line + "\n";
     }
-    if (!cxResult.stdErr.empty()) cxResult.stdErr.pop_back();
 
     if (!cxResult.stdErr.empty() && cxResult.stdOut.empty()) cxResult.success = false;
 
@@ -186,13 +184,11 @@ cx::Future cx::AsyncExecute(const std::string &command, const std::vector<std::s
         {
             cxResult.stdOut += line + "\n";
         }
-        if (!cxResult.stdOut.empty()) cxResult.stdOut.pop_back();
         
         while (errStream && std::getline(errStream, line))
         {
             cxResult.stdErr += line + "\n";
         }
-        if (!cxResult.stdErr.empty()) cxResult.stdErr.pop_back();
 
         if (!cxResult.stdErr.empty() && cxResult.stdOut.empty()) cxResult.success = false;
 
