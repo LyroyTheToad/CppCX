@@ -25,6 +25,11 @@ cx::Future::~Future()
 // Functions
 //
 
+cx::Result cx::Execute(const std::string& command, const uint16_t timeout)
+{
+    return cx::Execute(command, {}, timeout);
+}
+
 cx::Result cx::Execute(const std::string& command, const std::vector<std::string>& stdIn /*= {}*/, const uint16_t timeout /*= 10*/)
 {
     cx::Result cxResult;
