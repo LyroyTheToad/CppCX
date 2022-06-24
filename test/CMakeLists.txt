@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 3.0.0)
 
 set(THIS_TEST cppcx_test)
 
-enable_testing()
-
-add_test(NAME ${THIS_TEST} COMMAND ${THIS_TEST})
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 #
@@ -18,6 +17,26 @@ set(
 )
 
 add_executable(${THIS_TEST} ${CPPCX_TEST_FILES})
+
+
+#
+# Test commands
+#
+
+set(
+    TEST_COMMANDS
+    print.cpp
+    std_in.cpp
+    wait.cpp
+)
+
+foreach(file ${TEST_COMMANDS})
+    get_filename_component(name ${file} NAME_WE)
+    add_executable(${name} test_commands/${file})
+    list(APPEND TEST_COMMANDS_NAMES ${name})
+endforeach()
+
+add_dependencies(${THIS_TEST} ${TEST_COMMANDS_NAMES})
 
 
 #

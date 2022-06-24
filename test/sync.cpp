@@ -2,14 +2,14 @@
 
 #include <cppcx/cppcx.hpp>
 
-TEST(Sync, SimpleEcho)
+TEST(Sync, SimplePrint)
 {
     cx::Result r;
     
-    r = cx::Execute("echo hello");
+    r = cx::Execute("./print hello");
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
-    EXPECT_EQ(r.stdOut, "hello");
+    EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
 }
 
@@ -52,8 +52,20 @@ TEST(Sync, TimedOut)
 {
     cx::Result r;
 
-    r = cx::Execute("sleep 2s", 1);
+    r = cx::Execute("./wait 2", 1);
     EXPECT_FALSE(r.success);
     EXPECT_TRUE(r.timedOut);
+    EXPECT_EQ(r.stdOut, "");
+    EXPECT_EQ(r.stdErr, "");
+}
+
+TEST(Sync, StdIn)
+{
+    cx::Result r;
+
+    r = cx::Execute("./std_in", {"hello", "test", "q"}, 2);
+    EXPECT_TRUE(r.success);
+    EXPECT_FALSE(r.timedOut);
+    EXPECT_EQ(r.stdOut, "hello\ntest\n");
     EXPECT_EQ(r.stdErr, "");
 }

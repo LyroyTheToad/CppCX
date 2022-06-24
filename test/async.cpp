@@ -2,16 +2,19 @@
 
 #include <cppcx/cppcx.hpp>
 
-TEST(Async, SimpleEcho)
+using namespace std::chrono_literals;
+
+TEST(Async, SimplePrint)
 {
     cx::Result r;
     cx::Future f;
 
-    f = cx::AsyncExecute("echo hello");
+    f = cx::AsyncExecute("./print hello");
+    f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
-    EXPECT_EQ(r.stdOut, "hello");
+    EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
 }
 
@@ -23,6 +26,7 @@ TEST(Async, EmptyCommand)
     cx::Future f;
     
     f = cx::AsyncExecute("");
+    f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -30,6 +34,7 @@ TEST(Async, EmptyCommand)
     EXPECT_EQ(r.stdErr, STD_ERR);
     
     f = cx::AsyncExecute(" ");
+    f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -47,6 +52,7 @@ TEST(Async, InvalidCommand)
     for (std::string command : {"uhsbcowiu", "\n", "\t", "\r", "\f", "\v"})
     {
         f = cx::AsyncExecute(command);
+        f.GiveUpIn(100ms);
         r = f.Get();
         EXPECT_FALSE(r.success);
         EXPECT_FALSE(r.timedOut);
@@ -60,7 +66,7 @@ TEST(Async, TimedOut)
     cx::Result r;
     cx::Future f;
 
-    f = cx::AsyncExecute("sleep 2s");
+    f = cx::AsyncExecute("./wait 2");
     f.GiveUp();
     r = f.Get();
     EXPECT_FALSE(r.success);
@@ -74,28 +80,29 @@ TEST(Async, MoveBeforeGet)
     cx::Future f1;
     cx::Future f2;
 
-    f1 = cx::AsyncExecute("echo hello");
+    f1 = cx::AsyncExecute("./print hello");
     f2 = std::move(f1);
+    f2.GiveUpIn(100ms);
     r = f2.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
-    EXPECT_EQ(r.stdOut, "hello");
+    EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
 }
 
-TEST(Async, MoveAfterWait)
+TEST(Async, MoveAfterWaitFor)
 {
     cx::Result r;
     cx::Future f1;
     cx::Future f2;
 
-    f1 = cx::AsyncExecute("echo hello");
-    f1.Wait();
+    f1 = cx::AsyncExecute("./print hello");
+    f1.WaitFor(100ms);
     f2 = std::move(f1);
     r = f2.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
-    EXPECT_EQ(r.stdOut, "hello");
+    EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
 }
 
@@ -105,7 +112,8 @@ TEST(Async, AccessingInvalidFuture)
     cx::Future f1;
     cx::Future f2;
 
-    f1 = cx::AsyncExecute("echo hello");
+    f1 = cx::AsyncExecute("./print hello");
+    f1.GiveUpIn(100ms);
     f1.Get();
     try {
         f1.Get();
@@ -116,8 +124,9 @@ TEST(Async, AccessingInvalidFuture)
         EXPECT_EQ(std::string(ex.what()), "Accessing invalid cx::Future");
     }
     
-    f1 = cx::AsyncExecute("echo hello");
+    f1 = cx::AsyncExecute("./print hello");
     f2 = std::move(f1);
+    f2.GiveUpIn(100ms);
     try {
         f1.Get();
         ADD_FAILURE();
@@ -127,4 +136,18 @@ TEST(Async, AccessingInvalidFuture)
         EXPECT_EQ(std::string(ex.what()), "Accessing invalid cx::Future");
     }
     EXPECT_NO_THROW(f2.Get());
+}
+
+TEST(Async, StdIn)
+{
+    cx::Result r;
+    cx::Future f;
+
+    f = cx::AsyncExecute("./std_in", {"hello", "test", "q"});
+    f.GiveUpIn(100ms);
+    r = f.Get();
+    EXPECT_TRUE(r.success);
+    EXPECT_FALSE(r.timedOut);
+    EXPECT_EQ(r.stdOut, "hello\ntest\n");
+    EXPECT_EQ(r.stdErr, "");
 }

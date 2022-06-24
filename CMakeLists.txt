@@ -23,7 +23,10 @@ option(CPPCX_BUILD_TESTS "Build an run all the tests for CPPCX" ON)
 
 if(CPPCX_BUILD_TESTS)
     add_subdirectory(test)
+    execute_process(COMMAND ./test/test_commands/build_commands.sh WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 endif()
 
+
+# TODO Remove this
 add_executable(main main.cpp)
 target_link_libraries(main PRIVATE cppcx)
