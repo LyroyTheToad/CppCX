@@ -105,7 +105,7 @@ cx::Result cx::Execute(const std::string& command, const std::vector<std::string
 }
 
 
-cx::Future cx::AsyncExecute(const std::string &command, const std::vector<std::string>& stdIn /*= {}*/)
+cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::string>& stdIn /*= {}*/)
 {
     cx::Future cxFuture;
 

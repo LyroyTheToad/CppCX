@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(
     CPPCX_TEST_FILES
     sync.cpp
-    async.cpp
+    future.cpp
 )
 
 add_executable(${THIS_TEST} ${CPPCX_TEST_FILES})

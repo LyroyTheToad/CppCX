@@ -9,7 +9,7 @@ TEST(Async, SimplePrint)
     cx::Result r;
     cx::Future f;
 
-    f = cx::AsyncExecute("./print hello");
+    f = cx::FutureExecute("./print hello");
     f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_TRUE(r.success);
@@ -25,7 +25,7 @@ TEST(Async, EmptyCommand)
     cx::Result r;
     cx::Future f;
     
-    f = cx::AsyncExecute("");
+    f = cx::FutureExecute("");
     f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_FALSE(r.success);
@@ -33,7 +33,7 @@ TEST(Async, EmptyCommand)
     EXPECT_EQ(r.stdOut, "");
     EXPECT_EQ(r.stdErr, STD_ERR);
     
-    f = cx::AsyncExecute(" ");
+    f = cx::FutureExecute(" ");
     f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_FALSE(r.success);
@@ -51,7 +51,7 @@ TEST(Async, InvalidCommand)
 
     for (std::string command : {"uhsbcowiu", "\n", "\t", "\r", "\f", "\v"})
     {
-        f = cx::AsyncExecute(command);
+        f = cx::FutureExecute(command);
         f.GiveUpIn(100ms);
         r = f.Get();
         EXPECT_FALSE(r.success);
@@ -66,7 +66,7 @@ TEST(Async, TimedOut)
     cx::Result r;
     cx::Future f;
 
-    f = cx::AsyncExecute("./wait 2");
+    f = cx::FutureExecute("./wait 2");
     f.GiveUp();
     r = f.Get();
     EXPECT_FALSE(r.success);
@@ -80,7 +80,7 @@ TEST(Async, MoveBeforeGet)
     cx::Future f1;
     cx::Future f2;
 
-    f1 = cx::AsyncExecute("./print hello");
+    f1 = cx::FutureExecute("./print hello");
     f2 = std::move(f1);
     f2.GiveUpIn(100ms);
     r = f2.Get();
@@ -96,7 +96,7 @@ TEST(Async, MoveAfterWaitFor)
     cx::Future f1;
     cx::Future f2;
 
-    f1 = cx::AsyncExecute("./print hello");
+    f1 = cx::FutureExecute("./print hello");
     f1.WaitFor(100ms);
     f2 = std::move(f1);
     r = f2.Get();
@@ -112,7 +112,7 @@ TEST(Async, AccessingInvalidFuture)
     cx::Future f1;
     cx::Future f2;
 
-    f1 = cx::AsyncExecute("./print hello");
+    f1 = cx::FutureExecute("./print hello");
     f1.GiveUpIn(100ms);
     f1.Get();
     try {
@@ -124,7 +124,7 @@ TEST(Async, AccessingInvalidFuture)
         EXPECT_EQ(std::string(ex.what()), "Accessing invalid cx::Future");
     }
     
-    f1 = cx::AsyncExecute("./print hello");
+    f1 = cx::FutureExecute("./print hello");
     f2 = std::move(f1);
     f2.GiveUpIn(100ms);
     try {
@@ -143,7 +143,7 @@ TEST(Async, StdIn)
     cx::Result r;
     cx::Future f;
 
-    f = cx::AsyncExecute("./std_in", {"hello", "test", "q"});
+    f = cx::FutureExecute("./std_in", {"hello", "test", "q"});
     f.GiveUpIn(100ms);
     r = f.Get();
     EXPECT_TRUE(r.success);
