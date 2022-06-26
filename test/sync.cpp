@@ -76,3 +76,20 @@ TEST(Sync, StdIn)
     EXPECT_EQ(r.stdErr, "");
     EXPECT_EQ(r.error, "");
 }
+
+TEST(Sync, ClearedParameters)
+{
+    cx::Result r;
+
+    std::string command = "./std_in";
+    std::vector<std::string> stdIn = {"hello", "test", "q"};
+    
+    r = cx::Execute(command, stdIn, 2);
+    command.clear();
+    stdIn.clear();
+    EXPECT_TRUE(r.success);
+    EXPECT_FALSE(r.timedOut);
+    EXPECT_EQ(r.stdOut, "hello\ntest\n");
+    EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
+}

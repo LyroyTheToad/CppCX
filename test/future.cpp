@@ -159,3 +159,22 @@ TEST(Async, StdIn)
     EXPECT_EQ(r.stdErr, "");
     EXPECT_EQ(r.error, "");
 }
+
+TEST(Async, ClearedParameters)
+{
+    cx::Result r;
+    cx::Future f;
+
+    std::string command = "./std_in";
+    std::vector<std::string> stdIn = {"hello", "test", "q"};
+    
+    f = cx::FutureExecute(command, stdIn);
+    r = f.Get();
+    command.clear();
+    stdIn.clear();
+    EXPECT_TRUE(r.success);
+    EXPECT_FALSE(r.timedOut);
+    EXPECT_EQ(r.stdOut, "hello\ntest\n");
+    EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
+}
