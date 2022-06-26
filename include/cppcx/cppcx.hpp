@@ -10,6 +10,7 @@ namespace cx
         bool timedOut = false;
         std::string stdOut = "";
         std::string stdErr = "";
+        std::string error = "";
     };
 
 

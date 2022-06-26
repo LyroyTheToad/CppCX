@@ -36,7 +36,7 @@ cx::Result cx::Execute(const std::string& command, const std::vector<std::string
 
     if (command.empty() || command.find_first_not_of(' ') == std::string::npos)
     {
-        cxResult.stdErr = "Empty command";
+        cxResult.error = "Empty command";
         cxResult.success = false;
         return cxResult;
     }
@@ -65,7 +65,7 @@ cx::Result cx::Execute(const std::string& command, const std::vector<std::string
 
     if (ec)
     {
-        cxResult.stdErr = "Invalid command";
+        cxResult.error = "Invalid command";
         cxResult.success = false;
         return cxResult;
     }
@@ -112,7 +112,7 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
     if (command.empty() || command.find_first_not_of(' ') == std::string::npos)
     {
         cx::Result cxResult;
-        cxResult.stdErr = "Empty command";
+        cxResult.error = "Empty command";
         cxResult.success = false;
 
         // A workaround to create a ready future
@@ -153,7 +153,7 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
 
         if (ec)
         {
-            cxResult.stdErr = "Invalid command";
+            cxResult.error = "Invalid command";
             cxResult.success = false;
             return cxResult;
         }

@@ -2,6 +2,7 @@
 
 #include <cppcx/cppcx.hpp>
 
+
 TEST(Sync, SimplePrint)
 {
     cx::Result r;
@@ -11,11 +12,12 @@ TEST(Sync, SimplePrint)
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
 
 TEST(Sync, EmptyCommand)
 {
-    const char* STD_ERR = "Empty command";
+    const char* ERROR = "Empty command";
 
     cx::Result r;
     
@@ -23,18 +25,20 @@ TEST(Sync, EmptyCommand)
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "");
-    EXPECT_EQ(r.stdErr, STD_ERR);
+    EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, ERROR);
     
     r = cx::Execute(" ");
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "");
-    EXPECT_EQ(r.stdErr, STD_ERR);
+    EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, ERROR);
 }
 
 TEST(Sync, InvalidCommand)
 {
-    const char* STD_ERR = "Invalid command";
+    const char* ERROR = "Invalid command";
 
     cx::Result r;
 
@@ -44,7 +48,8 @@ TEST(Sync, InvalidCommand)
         EXPECT_FALSE(r.success);
         EXPECT_FALSE(r.timedOut);
         EXPECT_EQ(r.stdOut, "");
-        EXPECT_EQ(r.stdErr, STD_ERR);
+        EXPECT_EQ(r.stdErr, "");
+        EXPECT_EQ(r.error, ERROR);
     }
 }
 
@@ -57,6 +62,7 @@ TEST(Sync, TimedOut)
     EXPECT_TRUE(r.timedOut);
     EXPECT_EQ(r.stdOut, "");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
 
 TEST(Sync, StdIn)
@@ -68,4 +74,5 @@ TEST(Sync, StdIn)
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\ntest\n");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }

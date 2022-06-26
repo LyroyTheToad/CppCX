@@ -16,11 +16,12 @@ TEST(Async, SimplePrint)
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
 
 TEST(Async, EmptyCommand)
 {
-    const char* STD_ERR = "Empty command";
+    const char* ERROR = "Empty command";
 
     cx::Result r;
     cx::Future f;
@@ -31,7 +32,8 @@ TEST(Async, EmptyCommand)
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "");
-    EXPECT_EQ(r.stdErr, STD_ERR);
+    EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, ERROR);
     
     f = cx::FutureExecute(" ");
     f.GiveUpIn(100ms);
@@ -39,12 +41,13 @@ TEST(Async, EmptyCommand)
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "");
-    EXPECT_EQ(r.stdErr, STD_ERR);
+    EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, ERROR);
 }
 
 TEST(Async, InvalidCommand)
 {
-    const char* STD_ERR = "Invalid command";
+    const char* ERROR = "Invalid command";
 
     cx::Result r;
     cx::Future f;
@@ -57,7 +60,8 @@ TEST(Async, InvalidCommand)
         EXPECT_FALSE(r.success);
         EXPECT_FALSE(r.timedOut);
         EXPECT_EQ(r.stdOut, "");
-        EXPECT_EQ(r.stdErr, STD_ERR);
+        EXPECT_EQ(r.stdErr, "");
+        EXPECT_EQ(r.error, ERROR);
     }
 }
 
@@ -72,6 +76,7 @@ TEST(Async, TimedOut)
     EXPECT_FALSE(r.success);
     EXPECT_TRUE(r.timedOut);
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
 
 TEST(Async, MoveBeforeGet)
@@ -88,6 +93,7 @@ TEST(Async, MoveBeforeGet)
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
 
 TEST(Async, MoveAfterWaitFor)
@@ -104,6 +110,7 @@ TEST(Async, MoveAfterWaitFor)
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\n");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
 
 TEST(Async, AccessingInvalidFuture)
@@ -150,4 +157,5 @@ TEST(Async, StdIn)
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\ntest\n");
     EXPECT_EQ(r.stdErr, "");
+    EXPECT_EQ(r.error, "");
 }
