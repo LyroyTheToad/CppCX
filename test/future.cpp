@@ -4,7 +4,7 @@
 
 using namespace std::chrono_literals;
 
-TEST(Async, SimplePrint)
+TEST(Future, SimplePrint)
 {
     cx::Result r;
     cx::Future f;
@@ -19,7 +19,7 @@ TEST(Async, SimplePrint)
     EXPECT_EQ(r.error, "");
 }
 
-TEST(Async, EmptyCommand)
+TEST(Future, EmptyCommand)
 {
     const char* ERROR = "Empty command";
 
@@ -45,7 +45,7 @@ TEST(Async, EmptyCommand)
     EXPECT_EQ(r.error, ERROR);
 }
 
-TEST(Async, InvalidCommand)
+TEST(Future, InvalidCommand)
 {
     const char* ERROR = "Invalid command";
 
@@ -65,7 +65,7 @@ TEST(Async, InvalidCommand)
     }
 }
 
-TEST(Async, TimedOut)
+TEST(Future, TimedOut)
 {
     cx::Result r;
     cx::Future f;
@@ -79,7 +79,7 @@ TEST(Async, TimedOut)
     EXPECT_EQ(r.error, "");
 }
 
-TEST(Async, MoveBeforeGet)
+TEST(Future, MoveBeforeGet)
 {
     cx::Result r;
     cx::Future f1;
@@ -96,7 +96,7 @@ TEST(Async, MoveBeforeGet)
     EXPECT_EQ(r.error, "");
 }
 
-TEST(Async, MoveAfterWaitFor)
+TEST(Future, MoveAfterWaitFor)
 {
     cx::Result r;
     cx::Future f1;
@@ -113,7 +113,7 @@ TEST(Async, MoveAfterWaitFor)
     EXPECT_EQ(r.error, "");
 }
 
-TEST(Async, AccessingInvalidFuture)
+TEST(Future, AccessingInvalidFuture)
 {
     cx::Result r;
     cx::Future f1;
@@ -145,7 +145,7 @@ TEST(Async, AccessingInvalidFuture)
     EXPECT_NO_THROW(f2.Get());
 }
 
-TEST(Async, StdIn)
+TEST(Future, StdIn)
 {
     cx::Result r;
     cx::Future f;
@@ -160,7 +160,7 @@ TEST(Async, StdIn)
     EXPECT_EQ(r.error, "");
 }
 
-TEST(Async, ClearedParameters)
+TEST(Future, ClearedParameters)
 {
     cx::Result r;
     cx::Future f;
