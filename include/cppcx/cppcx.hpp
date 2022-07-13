@@ -1,3 +1,4 @@
+#include <atomic>
 #include <future>
 #include <string>
 #include <vector>
@@ -61,8 +62,8 @@ namespace cx
     private:
 
         std::future<Result> mFuture;
-        std::shared_ptr<bool> mpKeepRunning = std::make_shared<bool>(true);
-
+        std::shared_ptr<std::atomic_bool> mpKeepRunning = std::make_shared<std::atomic_bool>(true);
+        
         inline void _CheckIfValid() const { if (!Valid()) throw std::runtime_error("Accessing invalid cx::Future"); }
 
         // Friend to grant direct access to `mFuture` and `mpKeepRunning`

@@ -122,7 +122,7 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
         return cxFuture;
     }
 
-    const std::shared_ptr<const bool> pKeepRunning = cxFuture.mpKeepRunning;
+    const std::shared_ptr<const std::atomic_bool> pKeepRunning = cxFuture.mpKeepRunning;
 
     cxFuture.mFuture = std::async(std::launch::async, [command, pKeepRunning, stdIn]()
     {
