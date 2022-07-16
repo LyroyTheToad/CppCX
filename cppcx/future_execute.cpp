@@ -1,108 +1,8 @@
-#include <chrono>
 #include <thread>
 
 #include <boost/process.hpp>
 
-#include "cppcx_conf.hpp"
-#include "cppcx/cppcx.hpp"
-
-
-//
-// Constructor and deconstructor
-//
-
-cx::Future::Future() noexcept {}
-
-cx::Future::~Future()
-{
-    GiveUp();
-
-    // There is no need to call `mFuture.wait()` since its deconstructor already does it
-}
-
-
-//
-// Functions
-//
-
-cx::Result cx::Execute(const std::string& command, const uint16_t timeout)
-{
-    return cx::Execute(command, {}, timeout);
-}
-
-cx::Result cx::Execute(const std::string& command, const std::vector<std::string>& stdIn /*= {}*/, const uint16_t timeout /*= 10*/)
-{
-    cx::Result cxResult;
-
-    if (command.empty() || command.find_first_not_of(' ') == std::string::npos)
-    {
-        cxResult.error = "Empty command";
-        cxResult.success = false;
-        return cxResult;
-    }
-
-    namespace bp = boost::process;
-
-    bp::group processGroup;
-    bp::child childProcess;
-
-    bp::ipstream outStream, errStream;
-    bp::opstream inStream;
-    std::string line;
-
-    std::error_code ec;
-
-
-    childProcess = bp::child(
-        command,
-        processGroup,
-        bp::std_in < inStream,
-        bp::std_out > outStream,
-        bp::std_err > errStream,
-        ec
-    );
-
-
-    if (ec)
-    {
-        cxResult.error = "Invalid command";
-        cxResult.success = false;
-        return cxResult;
-    }
-
-
-    for (const std::string& s : stdIn)
-    {
-        inStream << s << std::endl;
-    }
-
-
-    if (timeout == 0)
-    {
-        processGroup.wait();
-    }
-    else if (!childProcess.wait_for(std::chrono::seconds(timeout)))
-    {
-        processGroup.terminate();
-        cxResult.success = false;
-        cxResult.timedOut = true;
-    }
-    
-
-    while (outStream && std::getline(outStream, line))
-    {
-        cxResult.stdOut += line + "\n";
-    }
-    
-    while (errStream && std::getline(errStream, line))
-    {
-        cxResult.stdErr += line + "\n";
-    }
-
-    if (!cxResult.stdErr.empty() && cxResult.stdOut.empty()) cxResult.success = false;
-
-    return cxResult;
-}
+#include "future_execute.hpp"
 
 
 cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::string>& stdIn /*= {}*/)
@@ -119,12 +19,15 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
         cxFuture.mFuture = std::async(std::launch::deferred, [&cxResult](){ return cxResult; });
         cxFuture.mFuture.wait();
 
+        *cxFuture.mpIsRunning = false;
+
         return cxFuture;
     }
 
+    const std::shared_ptr<std::atomic_bool> pIsRunning = cxFuture.mpIsRunning;
     const std::shared_ptr<const std::atomic_bool> pKeepRunning = cxFuture.mpKeepRunning;
 
-    cxFuture.mFuture = std::async(std::launch::async, [command, pKeepRunning, stdIn]()
+    cxFuture.mFuture = std::async(std::launch::async, [command, pIsRunning, pKeepRunning, stdIn]()
     {
         namespace bp = boost::process;
         using namespace std::chrono_literals;
@@ -167,14 +70,14 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
 
         while(childProcess.running())
         {
+            std::this_thread::sleep_for(100ms);
+
             if (!(*pKeepRunning))
             {    
                 cxResult.success = false;
                 cxResult.timedOut = true;
                 break;
             }
-
-            std::this_thread::sleep_for(500ms);
         }
 
         processGroup.terminate(ec);
@@ -192,9 +95,11 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
 
         if (!cxResult.stdErr.empty() && cxResult.stdOut.empty()) cxResult.success = false;
 
+        *pIsRunning = false;
+
         return cxResult;
 
     });
-
+    
     return cxFuture;
 }

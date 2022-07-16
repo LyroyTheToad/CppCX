@@ -11,6 +11,7 @@ TEST(Future, SimplePrint)
 
     f = cx::FutureExecute("./print hello");
     f.GiveUpIn(100ms);
+    EXPECT_FALSE(f.IsRunning());
     r = f.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -28,6 +29,7 @@ TEST(Future, EmptyCommand)
     
     f = cx::FutureExecute("");
     f.GiveUpIn(100ms);
+    EXPECT_FALSE(f.IsRunning());
     r = f.Get();
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -37,6 +39,7 @@ TEST(Future, EmptyCommand)
     
     f = cx::FutureExecute(" ");
     f.GiveUpIn(100ms);
+    EXPECT_FALSE(f.IsRunning());
     r = f.Get();
     EXPECT_FALSE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -56,6 +59,7 @@ TEST(Future, InvalidCommand)
     {
         f = cx::FutureExecute(command);
         f.GiveUpIn(100ms);
+        EXPECT_FALSE(f.IsRunning());
         r = f.Get();
         EXPECT_FALSE(r.success);
         EXPECT_FALSE(r.timedOut);
@@ -72,6 +76,7 @@ TEST(Future, TimedOut)
 
     f = cx::FutureExecute("./wait 2");
     f.GiveUp();
+    EXPECT_FALSE(f.IsRunning());
     r = f.Get();
     EXPECT_FALSE(r.success);
     EXPECT_TRUE(r.timedOut);
@@ -88,6 +93,7 @@ TEST(Future, MoveBeforeGet)
     f1 = cx::FutureExecute("./print hello");
     f2 = std::move(f1);
     f2.GiveUpIn(100ms);
+    EXPECT_FALSE(f2.IsRunning());
     r = f2.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -105,6 +111,7 @@ TEST(Future, MoveAfterWaitFor)
     f1 = cx::FutureExecute("./print hello");
     f1.WaitFor(100ms);
     f2 = std::move(f1);
+    EXPECT_FALSE(f2.IsRunning());
     r = f2.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -143,6 +150,19 @@ TEST(Future, AccessingInvalidFuture)
         EXPECT_EQ(std::string(ex.what()), "Accessing invalid cx::Future");
     }
     EXPECT_NO_THROW(f2.Get());
+
+    f1 = cx::FutureExecute("./print hello");
+    f2 = std::move(f1);
+    f2.GiveUpIn(100ms);
+    try {
+        f1.IsRunning();
+        ADD_FAILURE();
+    }
+    catch (const std::runtime_error& ex)
+    {
+        EXPECT_EQ(std::string(ex.what()), "Accessing invalid cx::Future");
+    }
+    EXPECT_NO_THROW(f2.IsRunning());
 }
 
 TEST(Future, StdIn)
@@ -152,6 +172,7 @@ TEST(Future, StdIn)
 
     f = cx::FutureExecute("./std_in", {"hello", "test", "q"});
     f.GiveUpIn(100ms);
+    EXPECT_FALSE(f.IsRunning());
     r = f.Get();
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
@@ -169,6 +190,7 @@ TEST(Future, ClearedParameters)
     std::vector<std::string> stdIn = {"hello", "test", "q"};
     
     f = cx::FutureExecute(command, stdIn);
+    EXPECT_FALSE(f.IsRunning());
     r = f.Get();
     command.clear();
     stdIn.clear();

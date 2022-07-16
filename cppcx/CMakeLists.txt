@@ -8,7 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #
 
 add_library(${THIS} SHARED
-    cppcx.cpp
+    execute.cpp
+    future.cpp
+    future_execute.cpp
 )
 
 
@@ -19,6 +21,7 @@ add_library(${THIS} SHARED
 target_include_directories(${THIS} PUBLIC
     ${PROJECT_BINARY_DIR}
     ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${PROJECT_SOURCE_DIR}/include/cppcx
 )
 
 target_link_directories(${THIS} PRIVATE
