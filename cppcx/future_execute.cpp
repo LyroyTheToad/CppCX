@@ -24,10 +24,12 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
         return cxFuture;
     }
 
-    const std::shared_ptr<std::atomic_bool> pIsRunning = cxFuture.mpIsRunning;
-    const std::shared_ptr<const std::atomic_bool> pKeepRunning = cxFuture.mpKeepRunning;
+    const auto pIsRunning = cxFuture.mpIsRunning;
+    const auto pStopRunning = cxFuture.mpStopRunning;
+    const auto pMutex = cxFuture.mpMutex;
+    const auto pConditionVar = cxFuture.mpConditionVar;
 
-    cxFuture.mFuture = std::async(std::launch::async, [command, pIsRunning, pKeepRunning, stdIn]()
+    cxFuture.mFuture = std::async(std::launch::async, [command, stdIn, pIsRunning, pStopRunning, pMutex, pConditionVar]
     {
         namespace bp = boost::process;
         using namespace std::chrono_literals;
@@ -58,6 +60,7 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
         {
             cxResult.error = "Invalid command";
             cxResult.success = false;
+            *pIsRunning = false;
             return cxResult;
         }
 
@@ -67,20 +70,31 @@ cx::Future cx::FutureExecute(const std::string &command, const std::vector<std::
             inStream << s << std::endl;
         }
 
-
-        while(childProcess.running())
+     
+        std::thread waitingThread([&childProcess, &pConditionVar, &ec]
         {
-            std::this_thread::sleep_for(100ms);
+            childProcess.wait(ec);
+            pConditionVar->notify_one();
+        });
 
-            if (!(*pKeepRunning))
-            {    
+        std::unique_lock lk(*pMutex);
+        pConditionVar->wait(lk, [&childProcess, &pStopRunning, &cxResult]
+        {
+            if (!childProcess.running()) return true;
+            
+            if (*pStopRunning)
+            {
                 cxResult.success = false;
                 cxResult.timedOut = true;
-                break;
+                return true;
             }
-        }
+
+            return false;
+        });
+
 
         processGroup.terminate(ec);
+        waitingThread.join();
 
 
         while (outStream && std::getline(outStream, line))

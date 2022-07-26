@@ -8,6 +8,7 @@ TEST(Sync, SimplePrint)
     cx::Result r;
     
     r = cx::Execute("./print hello");
+
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\n");
@@ -15,36 +16,36 @@ TEST(Sync, SimplePrint)
     EXPECT_EQ(r.error, "");
 }
 
+
 TEST(Sync, EmptyCommand)
 {
-    const char* ERROR = "Empty command";
+    std::string ERROR = "Empty command";
 
     cx::Result r;
     
-    r = cx::Execute("");
-    EXPECT_FALSE(r.success);
-    EXPECT_FALSE(r.timedOut);
-    EXPECT_EQ(r.stdOut, "");
-    EXPECT_EQ(r.stdErr, "");
-    EXPECT_EQ(r.error, ERROR);
-    
-    r = cx::Execute(" ");
-    EXPECT_FALSE(r.success);
-    EXPECT_FALSE(r.timedOut);
-    EXPECT_EQ(r.stdOut, "");
-    EXPECT_EQ(r.stdErr, "");
-    EXPECT_EQ(r.error, ERROR);
+    for (auto command : {"", " "})
+    {
+        r = cx::Execute(command);
+
+        EXPECT_FALSE(r.success);
+        EXPECT_FALSE(r.timedOut);
+        EXPECT_EQ(r.stdOut, "");
+        EXPECT_EQ(r.stdErr, "");
+        EXPECT_EQ(r.error, ERROR);
+    }    
 }
+
 
 TEST(Sync, InvalidCommand)
 {
-    const char* ERROR = "Invalid command";
+    std::string ERROR = "Invalid command";
 
     cx::Result r;
 
-    for (std::string command : {"uhsbcowiu", "\n", "\t", "\r", "\f", "\v"})
+    for (auto command : {"uhsbcowiu", "\n", "\t", "\r", "\f", "\v"})
     {
         r = cx::Execute(command);
+
         EXPECT_FALSE(r.success);
         EXPECT_FALSE(r.timedOut);
         EXPECT_EQ(r.stdOut, "");
@@ -53,11 +54,13 @@ TEST(Sync, InvalidCommand)
     }
 }
 
+
 TEST(Sync, TimedOut)
 {
     cx::Result r;
 
-    r = cx::Execute("./wait 2", 1);
+    r = cx::Execute("./wait 5", 1);
+
     EXPECT_FALSE(r.success);
     EXPECT_TRUE(r.timedOut);
     EXPECT_EQ(r.stdOut, "");
@@ -69,7 +72,8 @@ TEST(Sync, StdIn)
 {
     cx::Result r;
 
-    r = cx::Execute("./std_in", {"hello", "test", "q"}, 2);
+    r = cx::Execute("./std_in", {"hello", "test", "q"});
+
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\ntest\n");
@@ -77,16 +81,18 @@ TEST(Sync, StdIn)
     EXPECT_EQ(r.error, "");
 }
 
+
 TEST(Sync, ClearedParameters)
 {
     cx::Result r;
 
-    std::string command = "./std_in";
+    std::string command = "./late_std_in";
     std::vector<std::string> stdIn = {"hello", "test", "q"};
     
-    r = cx::Execute(command, stdIn, 2);
+    r = cx::Execute(command, stdIn);
     command.clear();
     stdIn.clear();
+
     EXPECT_TRUE(r.success);
     EXPECT_FALSE(r.timedOut);
     EXPECT_EQ(r.stdOut, "hello\ntest\n");

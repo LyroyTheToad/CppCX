@@ -26,8 +26,9 @@ add_executable(${THIS_TEST} ${CPPCX_TEST_FILES})
 set(
     TEST_COMMANDS
     print.cpp
-    std_in.cpp
     wait.cpp
+    std_in.cpp
+    late_std_in.cpp
 )
 
 foreach(file ${TEST_COMMANDS})
