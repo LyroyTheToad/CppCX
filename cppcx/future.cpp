@@ -30,7 +30,6 @@ cx::Future& cx::Future::operator=(Future&& other) noexcept
     return *this;
 }
 
-#include <iostream>
 
 void cx::Future::GiveUp()
 {
